@@ -148,6 +148,8 @@ int main(void)
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
 
+	glfwSwapInterval(1);	/* Should synchronize with V-Sync */
+
 	/* In the GLEW doc said that the glewInit() should be called after the context be set */
 	if (glewInit() != GLEW_OK)
 		std::cerr << " Error init glew." << std::endl;
@@ -196,7 +198,16 @@ int main(void)
 	unsigned int program = CreateShaderProgram(ShaderSource.VertexSource, ShaderSource.FragmentSource);
 	GLCall(glUseProgram(program));
 
+
+	/* The uniform variable is delivered per frame from CPU to GPU */
+	GLCall(int location = glGetUniformLocation(program, "u_Color"));
+	ASSERT(location != -1);
+	//GLCall(glUniform4f(location, 0.9f, 0.3f, 0.8f, 1.0f));
+
 	/* --------------------------------------------------------- */
+
+	float r = 0.0f;
+	float increment = 0.0001f;
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
@@ -204,8 +215,17 @@ int main(void)
 		/* Render here */
 		GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
+		GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
+
+		if (r > 1.0f || r < 0.0f)
+			increment = -increment;
+
+		r += increment;
+
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+
 
 		/* Swap front and back buffers */
 		GLCall(glfwSwapBuffers(window));
@@ -215,6 +235,6 @@ int main(void)
 
 	GLCall(glDeleteProgram(program));
 
-	GLCall(glfwTerminate());
+	glfwTerminate();
 	return 0;
 }
