@@ -130,37 +130,43 @@ int main(void)
 
 
 	/* ---------- Set the OpenGL buffer ---------- */
-	float pos[6] = {
-		-0.5f, +0.0f,
+	float pos[] = {
+		-0.5f, -0.5f,
 		+0.5f, -0.5f,
+		+0.5f, +0.5f,
 		-0.5f, +0.5f
 	};
 
-	/* Create a OpenGL Buffer NAME */
-	unsigned int buffer;
-	glGenBuffers(1, &buffer);
-	/* Choose which buffer to use right now */
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	/* Create a OpenGL Buffer object */
+	unsigned int indices[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
 
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), pos, GL_STATIC_DRAW);
+	/* Create vertex buffer */
+	unsigned int vertex_buffer;
+	glGenBuffers(1, &vertex_buffer);
+	/* Choose which buffer to use right now */
+	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	/* Create a OpenGL Buffer object */
+	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), pos, GL_STATIC_DRAW);
+
+	/* Create indice buffer */
+	unsigned int indice_buffer;
+	glGenBuffers(1, &indice_buffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indice_buffer); /* Vertex array indices */
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
 
 	/* -------------------------------------------- */
 
-	/* Set the vertex attribute */
+	/* ---------- Set the vertex attribute--------- */
 	unsigned int AttribIndex = 0;
 	glEnableVertexAttribArray(AttribIndex); /* You can enable it at any line, not necessary to be front of glVertexAttribPointer */
 	glVertexAttribPointer(AttribIndex, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0);
+	/* -------------------------------------------- */
 
 	/* ---------- Create a program with two shaders ---------- */
 
 	ShaderProgramSource ShaderSource = ParseShader("res/shaders/Basic.shader");
-	std::cout << "Vertex Shader" << std::endl;
-	std::cout << ShaderSource.VertexSource << std::endl;
-	std::cout << "Fragment Shader" << std::endl;
-	std::cout << ShaderSource.FragmentSource<< std::endl;
-
-
 	unsigned int program = CreateShaderProgram(ShaderSource.VertexSource, ShaderSource.FragmentSource);
 	glUseProgram(program);
 
@@ -172,7 +178,8 @@ int main(void)
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES,0,3);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
