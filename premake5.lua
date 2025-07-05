@@ -14,6 +14,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 Dir = {}
 Dir["GLFW"] = "OpenGL/vendor/GLFW"
+Dir["GLEW"] = "OpenGL/vendor/GLEW"
 
 project "OpenGL"
     location "OpenGL"
@@ -33,28 +34,35 @@ project "OpenGL"
     includedirs
     {
         "%{prj.name}/src",
-        "%{Dir.GLFW}/include"
+        "%{Dir.GLFW}/include",
+        "%{Dir.GLEW}/include"
     }
 
     libdirs
     {
-        "%{Dir.GLFW}/lib"
+        "%{Dir.GLFW}/lib",
+        "%{Dir.GLEW}/lib/Release/x64"
     }
 
     links
     {
         "glfw3",
-        "opengl32.lib"
+        "opengl32.lib",
+        "glew32s.lib"
     }
+
+
+    defines
+    {
+        "GLEW_STATIC"
+    }
+
 
     filter "system:windows"
         cppdialect "C++17"
         systemversion "latest"
         buildoptions {"/utf-8"}
 
-        defines
-        {
-        }
 
     filter "configurations:Debug"
         buildoptions "/MDd"
