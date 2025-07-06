@@ -10,6 +10,8 @@
 #include "Shader.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexBufferLayout.h"
+#include "VertexArray.h"
 
 struct ShaderProgramSource
 {
@@ -81,8 +83,8 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
 /* It is basically create a vertex shader and fragment shader using the source text */
 static unsigned int CreateShaderProgram(const std::string& vertexShader, const std::string& fragmentShader)
 {
-	std::cout << vertexShader << std::endl;
-	std::cout << fragmentShader << std::endl;
+	//std::cout << vertexShader << std::endl;
+	//std::cout << fragmentShader << std::endl;
 	unsigned int program = glCreateProgram();
 	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
@@ -132,7 +134,6 @@ int main(void)
 
 	/* Make the window's context current */
 	glfwMakeContextCurrent(window);
-
 	glfwSwapInterval(1);	/* Should synchronize with V-Sync */
 
 	/* In the GLEW doc said that the glewInit() should be called after the context be set */
@@ -142,10 +143,10 @@ int main(void)
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 
-	/* Because the */
+	/* Because the destructor of VertexBuffer and IndexBuffer cannot be performed normally 
+	 * after the glDeleteProgram(). We should use the {} to let their destructor be called 
+	 * before. */
 	{
-
-
 		/* ---------- Set the OpenGL buffer : vertex buffer and indice buffer ---------- */
 		float pos[] = {
 			-0.5f, -0.5f,
@@ -159,26 +160,21 @@ int main(void)
 			2, 3, 0
 		};
 
-
-		/* Use the vertex array object */
-		unsigned int vao;
-		GLCall(glGenVertexArrays(1, &vao));
-		GLCall(glBindVertexArray(vao));
+		/* --- Use the vertex array object without binding ---*/
+		VertexArray va;
+		/* ------------------------------------------------- */
 
 
-
-		/* Create vertex buffer */
+		/* --- Set the vertex buffer and vertexattribute --- */
 		VertexBuffer vb(&pos, 8 * sizeof(float));
+		VertexBufferLayout layout;
+		layout.Push<float>(2);
+		va.AddBuffer(vb, layout);
+		/* ------------------------------------------------- */
 
-		/* ---------- Set the vertex attribute--------- */
-		unsigned int AttribIndex = 0;
-		GLCall(glEnableVertexAttribArray(AttribIndex)); /* You can enable it at any line, not necessary to be front of glVertexAttribPointer */
-		GLCall(glVertexAttribPointer(AttribIndex, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (const void*)0));
-		/* -------------------------------------------- */
-
-		/* Create indice buffer */
+		/* --- Create indice buffer --- */
 		IndexBuffer ib(&indices, 6);
-		/* ------------------------------------------------------------------------------- */
+		/* -----------------------------*/
 
 
 		/* ---------- Create a program with two shaders ---------- */
@@ -187,13 +183,10 @@ int main(void)
 		unsigned int program = CreateShaderProgram(ShaderSource.VertexSource, ShaderSource.FragmentSource);
 		GLCall(glUseProgram(program));
 
-
 		/* The uniform variable is delivered per frame from CPU to GPU */
 		GLCall(int location = glGetUniformLocation(program, "u_Color"));
 		ASSERT(location != -1);
-		//GLCall(glUniform4f(location, 0.9f, 0.3f, 0.8f, 1.0f));
-
-		/* --------------------------------------------------------- */
+		/* ----------------------------------------------------------- */
 
 		float r = 0.0f;
 		float increment = 0.01f;
@@ -212,12 +205,11 @@ int main(void)
 			r += increment;
 
 			GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-			//GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);) /* Vertex array indices */
-			GLCall(glBindVertexArray(vao));
-			//glDrawArrays(GL_TRIANGLES, 0, 3);
+			
+			va.Bind();  /* Bind vertex array */
+			ib.Bind();  /* Bind index  array */
+
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-
-
 
 			/* Swap front and back buffers */
 			GLCall(glfwSwapBuffers(window));
