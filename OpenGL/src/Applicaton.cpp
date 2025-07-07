@@ -1,104 +1,15 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
-#include "examples.h"
 
 #include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
 
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexBufferLayout.h"
 #include "VertexArray.h"
+#include "Shader.h"
 
-struct ShaderProgramSource
-{
-	std::string VertexSource;
-	std::string FragmentSource;
-};
-
-static ShaderProgramSource ParseShader(const std::string& filePath)
-{
-	std::fstream stream(filePath);
-
-	enum class ShaderType
-	{
-		NONE = -1, VERTEX = 0, FRAGMENT = 1
-	};
-
-	std::string line;
-	std::stringstream ss[2];
-	ShaderType type = ShaderType::NONE;
-
-	while (getline(stream, line))
-	{
-		if (line.find("#shader") != std::string::npos)
-		{
-			if (line.find("vertex") != std::string::npos)
-				type = ShaderType::VERTEX;
-			else if (line.find("fragment") != std::string::npos)
-				type = ShaderType::FRAGMENT;
-		}
-		else
-		{
-			ss[(int)type] << line << "\n";
-		}
-	}
-
-	return { ss[0].str(),ss[1].str() };
-}
-
-/* The kernel combination function */
-static unsigned int CompileShader(unsigned int type, const std::string& source)
-{
-	unsigned int id = glCreateShader(type);
-	const char* src = source.c_str(); // This will be danger if we the source string is invalid or free later
-	GLCall(glShaderSource(id, 1, &src, nullptr));
-	GLCall(glCompileShader(id));
-
-	int result;
-	GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
-
-	if (result == GL_FALSE)
-	{
-		int length;
-		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
-		char* message = (char*)alloca(length * sizeof(char));
-		GLCall(glGetShaderInfoLog(id, length, &length, message));
-		std::cerr << " Failed to compile " <<
-			(type == GL_VERTEX_SHADER ? "vertex" : "fragment")
-			<< " shader! " << std::endl;
-		std::cout << message << std::endl;
-
-		GLCall(glDeleteShader(id));
-		return 0;
-	}
-
-	return id;
-
-}
-
-/* It is basically create a vertex shader and fragment shader using the source text */
-static unsigned int CreateShaderProgram(const std::string& vertexShader, const std::string& fragmentShader)
-{
-	//std::cout << vertexShader << std::endl;
-	//std::cout << fragmentShader << std::endl;
-	unsigned int program = glCreateProgram();
-	unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertexShader);
-	unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragmentShader);
-
-	GLCall(glAttachShader(program, vs));
-	GLCall(glAttachShader(program, fs));
-	GLCall(glLinkProgram(program));
-	GLCall(glValidateProgram(program));
-
-	GLCall(glDeleteShader(vs));
-	GLCall(glDeleteShader(fs));
-
-	return program;
-}
 
 /* Just set the vertex and draw it without using buffer*/
 void drawSimpleTriangle()
@@ -124,7 +35,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(640, 480, "Hello OpenGL", NULL, NULL);
 	if (!window)
 	{
 		std::cerr << " Error create glfw window " << std::endl;
@@ -170,6 +81,8 @@ int main(void)
 		VertexBufferLayout layout;
 		layout.Push<float>(2);
 		va.AddBuffer(vb, layout);
+		/* Each operation of va will use Bind() first, so you don't have to Bind() before
+		 * the operation./
 		/* ------------------------------------------------- */
 
 		/* --- Create indice buffer --- */
@@ -178,18 +91,17 @@ int main(void)
 
 
 		/* ---------- Create a program with two shaders ---------- */
-
-		ShaderProgramSource ShaderSource = ParseShader("res/shaders/Basic.shader");
-		unsigned int program = CreateShaderProgram(ShaderSource.VertexSource, ShaderSource.FragmentSource);
-		GLCall(glUseProgram(program));
-
-		/* The uniform variable is delivered per frame from CPU to GPU */
-		GLCall(int location = glGetUniformLocation(program, "u_Color"));
-		ASSERT(location != -1);
-		/* ----------------------------------------------------------- */
-
+		Shader shader("res/shaders/Basic.shader");
+		shader.Bind();
 		float r = 0.0f;
 		float increment = 0.01f;
+		shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
+		/* ----------------------------------------------------------- */
+
+		va.Unbind();
+		vb.Unbind();
+		ib.Unbind();
+		shader.Unbind();
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
@@ -197,7 +109,8 @@ int main(void)
 			/* Render here */
 			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
-			GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f));
+			shader.Bind();
+			shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
 
 			if (r > 1.0f || r < 0.0f)
 				increment = -increment;
@@ -211,15 +124,10 @@ int main(void)
 
 			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
 
-			/* Swap front and back buffers */
 			GLCall(glfwSwapBuffers(window));
-			/* Poll for and process events */
 			GLCall(glfwPollEvents());
 		}
-
-		GLCall(glDeleteProgram(program));
-
-	}
+	}/* The destrutor will be called at this place. */
 	glfwTerminate();
 	return 0;
 }
