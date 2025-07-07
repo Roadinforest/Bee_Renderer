@@ -7,7 +7,7 @@
 #include <string>
 #include <sstream>
 
-#include "Shader.h"
+#include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexBufferLayout.h"

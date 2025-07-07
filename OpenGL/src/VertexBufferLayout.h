@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GL/glew.h"
-#include "Shader.h"
+#include "Renderer.h"
 #include <vector>
 
 

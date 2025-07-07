@@ -1,5 +1,5 @@
 #include "VertexArray.h"
-#include "Shader.h"
+#include "Renderer.h"
 #include "GL/glew.h"
 
 VertexArray::VertexArray()
