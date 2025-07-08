@@ -53,7 +53,6 @@ int main(void)
 
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
-
 	/* Because the destructor of VertexBuffer and IndexBuffer cannot be performed normally 
 	 * after the glDeleteProgram(). We should use the {} to let their destructor be called 
 	 * before. */
@@ -75,7 +74,6 @@ int main(void)
 		VertexArray va;
 		/* ------------------------------------------------- */
 
-
 		/* --- Set the vertex buffer and vertexattribute --- */
 		VertexBuffer vb(&pos, 8 * sizeof(float));
 		VertexBufferLayout layout;
@@ -95,7 +93,7 @@ int main(void)
 		shader.Bind();
 		float r = 0.0f;
 		float increment = 0.01f;
-		shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
+		shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f); // Should always be called after Bind() function
 		/* ----------------------------------------------------------- */
 
 		va.Unbind();
@@ -103,31 +101,28 @@ int main(void)
 		ib.Unbind();
 		shader.Unbind();
 
+		Renderer renderer;
+
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-			GLCall(glClear(GL_COLOR_BUFFER_BIT));
+			renderer.Clear();
 
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
+
+			renderer.Draw(va,ib,shader);
 
 			if (r > 1.0f || r < 0.0f)
 				increment = -increment;
 
 			r += increment;
 
-			GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
-			
-			va.Bind();  /* Bind vertex array */
-			ib.Bind();  /* Bind index  array */
-
-			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-
 			GLCall(glfwSwapBuffers(window));
 			GLCall(glfwPollEvents());
 		}
-	}/* The destrutor will be called at this place. */
+	}/* Out destrutors will be called at this bracket. */
 	glfwTerminate();
 	return 0;
 }

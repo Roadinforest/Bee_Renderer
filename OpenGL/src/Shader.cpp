@@ -12,13 +12,13 @@
 
 Shader::Shader(const std::string& filePath)
 {
-		ShaderProgramSource ShaderSource = ParseShader(filePath);
-		m_RendererId = CreateShaderProgram(ShaderSource.VertexSource, ShaderSource.FragmentSource);
+	ShaderProgramSource ShaderSource = ParseShader(filePath);
+	m_RendererId = CreateShaderProgram(ShaderSource.VertexSource, ShaderSource.FragmentSource);
 }
 
 Shader::~Shader()
 {
-		GLCall(glDeleteProgram(m_RendererId));
+	GLCall(glDeleteProgram(m_RendererId));
 }
 
 void Shader::Bind()const
@@ -28,12 +28,12 @@ void Shader::Bind()const
 
 void Shader::Unbind()const
 {
-		GLCall(glUseProgram(0));
+	GLCall(glUseProgram(0));
 }
 
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
 {
-		GLCall(glUniform4f(GetUniformLocation(name), v0, v1 , v2, v3));
+	GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
 
 int Shader::GetUniformLocation(const std::string& name)
