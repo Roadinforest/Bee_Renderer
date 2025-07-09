@@ -9,6 +9,7 @@
 #include "VertexBufferLayout.h"
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
 
 
 /* Just set the vertex and draw it without using buffer*/
@@ -35,7 +36,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello OpenGL", NULL, NULL);
+	window = glfwCreateWindow(1280, 960, "Hello OpenGL", NULL, NULL);
 	if (!window)
 	{
 		std::cerr << " Error create glfw window " << std::endl;
@@ -59,10 +60,10 @@ int main(void)
 	{
 		/* ---------- Set the OpenGL buffer : vertex buffer and indice buffer ---------- */
 		float pos[] = {
-			-0.5f, -0.5f,
-			+0.5f, -0.5f,
-			+0.5f, +0.5f,
-			-0.5f, +0.5f
+			-0.5f, -0.5f, 0.0f, 0.0f,
+			+0.5f, -0.5f, 1.0f, 0.0f,
+			+0.5f, +0.5f, 1.0f, 1.0f,
+			-0.5f, +0.5f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[] = {
@@ -75,9 +76,10 @@ int main(void)
 		/* ------------------------------------------------- */
 
 		/* --- Set the vertex buffer and vertexattribute --- */
-		VertexBuffer vb(&pos, 8 * sizeof(float));
+		VertexBuffer vb(&pos, 4 * 4 * sizeof(float));
 		VertexBufferLayout layout;
-		layout.Push<float>(2);
+		layout.Push<float>(2); /* Push the position*/
+		layout.Push<float>(2); /* Push the texture position */
 		va.AddBuffer(vb, layout);
 		/* Each operation of va will use Bind() first, so you don't have to Bind() before
 		 * the operation./
@@ -99,9 +101,13 @@ int main(void)
 		va.Unbind();
 		vb.Unbind();
 		ib.Unbind();
-		shader.Unbind();
 
 		Renderer renderer;
+
+		Texture texture("res/textures/Dream_chaser.png");
+		texture.Bind();
+		shader.SetUniform1i("u_Texture", 0); /* Set the slot of the texture. */
+		shader.Unbind();
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
@@ -109,6 +115,7 @@ int main(void)
 			/* Render here */
 			renderer.Clear();
 
+			texture.Bind();
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
 

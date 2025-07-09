@@ -34,6 +34,7 @@ project "OpenGL"
     includedirs
     {
         "%{prj.name}/src",
+        "%{prj.name}/src/vendor",
         "%{Dir.GLFW}/include",
         "%{Dir.GLEW}/include"
     }
