@@ -11,6 +11,9 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
 
 /* Just set the vertex and draw it without using buffer*/
 void drawSimpleTriangle()
@@ -60,16 +63,26 @@ int main(void)
 	{
 		/* ---------- Set the OpenGL buffer : vertex buffer and indice buffer ---------- */
 		float pos[] = {
-			-0.5f, -0.5f, 0.0f, 0.0f,
-			+0.5f, -0.5f, 1.0f, 0.0f,
-			+0.5f, +0.5f, 1.0f, 1.0f,
-			-0.5f, +0.5f, 0.0f, 1.0f
+			-500.0f, -500.0f, 0.0f, 0.0f,
+			+500.0f, -500.0f, 1.0f, 0.0f,
+			+500.0f, +500.0f, 1.0f, 1.0f,
+			-500.0f, +500.0f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[] = {
 			0, 1, 2,
 			2, 3, 0
 		};
+
+		glm::mat4 proj 	= glm::ortho(-800.0f, 800.0f, -600.0f, 600.0f, -1.0f, 1.0f);   /* Ortho projection matrix. */
+		glm::mat4 view 	= glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));      /* View matrix. */
+		glm::mat4 model	= glm::translate(glm::mat4(1.0f), glm::vec3(100, 0, 0));      /* Model matrix. */
+
+		glm::mat4 mvp = proj * view * model;
+
+
+		GLCall(glEnable(GL_BLEND));
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		/* --- Use the vertex array object without binding ---*/
 		VertexArray va;
@@ -96,6 +109,7 @@ int main(void)
 		float r = 0.0f;
 		float increment = 0.01f;
 		shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f); // Should always be called after Bind() function
+		shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
 		/* ----------------------------------------------------------- */
 
 		va.Unbind();
@@ -119,7 +133,7 @@ int main(void)
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
 
-			renderer.Draw(va,ib,shader);
+			renderer.Draw(va, ib, shader);
 
 			if (r > 1.0f || r < 0.0f)
 				increment = -increment;
