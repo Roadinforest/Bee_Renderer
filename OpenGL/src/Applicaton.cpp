@@ -14,6 +14,9 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
+
 
 /* Just set the vertex and draw it without using buffer*/
 void drawSimpleTriangle()
@@ -63,10 +66,10 @@ int main(void)
 	{
 		/* ---------- Set the OpenGL buffer : vertex buffer and indice buffer ---------- */
 		float pos[] = {
-			-500.0f, -500.0f, 0.0f, 0.0f,
-			+500.0f, -500.0f, 1.0f, 0.0f,
-			+500.0f, +500.0f, 1.0f, 1.0f,
-			-500.0f, +500.0f, 0.0f, 1.0f
+			 0.0f,      0.0f, 0.0f, 0.0f,
+		    1000.0f,    0.0f, 1.0f, 0.0f,
+			1000.0f, 1000.0f, 1.0f, 1.0f,
+			   0.0f, 1000.0f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[] = {
@@ -74,9 +77,9 @@ int main(void)
 			2, 3, 0
 		};
 
-		glm::mat4 proj 	= glm::ortho(-800.0f, 800.0f, -600.0f, 600.0f, -1.0f, 1.0f);   /* Ortho projection matrix. */
-		glm::mat4 view 	= glm::translate(glm::mat4(1.0f), glm::vec3(-100, 0, 0));      /* View matrix. */
-		glm::mat4 model	= glm::translate(glm::mat4(1.0f), glm::vec3(100, 0, 0));      /* Model matrix. */
+		glm::mat4 proj 	= glm::ortho(0.0f, 1500.0f, 0.0f, 1500.0f, -100.0f, 100.0f);   /* Ortho projection matrix. */
+		glm::mat4 view 	= glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));      /* View matrix. */
+		glm::mat4 model	= glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));      /* Model matrix. */
 
 		glm::mat4 mvp = proj * view * model;
 
@@ -123,11 +126,30 @@ int main(void)
 		shader.SetUniform1i("u_Texture", 0); /* Set the slot of the texture. */
 		shader.Unbind();
 
+		// Setup ImGui binding
+		ImGui::CreateContext();
+		//ImGuiIO& io = ImGui::GetIO(); (void)io;
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+		ImGui_ImplGlfwGL3_Init(window, true);
+		ImGui::StyleColorsDark();
+
+		bool show_demo_window = true;
+		bool show_another_window = false;
+		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+		glm::vec3 translation(0, 0, 0);
+
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
 			renderer.Clear();
+			ImGui_ImplGlfwGL3_NewFrame();
+
+			glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);      /* Model matrix. */
+			glm::mat4 mvp = proj * view * model;
+			shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
 
 			texture.Bind();
 			shader.Bind();
@@ -140,10 +162,24 @@ int main(void)
 
 			r += increment;
 
+			// 1. Show a simple window.
+			// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
+			{
+				ImGui::SliderFloat("Translation X", &translation.x,    0.0f, 1000.0f); 
+				ImGui::SliderFloat("Translation Y", &translation.y,    0.0f, 1000.0f); 
+				ImGui::SliderFloat("Translation Z", &translation.z, -150.0f, 150.0f); 
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			}
+
+			ImGui::Render();
+			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
 			GLCall(glfwSwapBuffers(window));
 			GLCall(glfwPollEvents());
 		}
 	}/* Out destrutors will be called at this bracket. */
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
 	glfwTerminate();
 	return 0;
 }
