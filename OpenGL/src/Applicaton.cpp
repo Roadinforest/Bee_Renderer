@@ -138,7 +138,8 @@ int main(void)
 		bool show_another_window = false;
 		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-		glm::vec3 translation(0, 0, 0);
+		glm::vec3 translationA(0, 0, 0);
+		glm::vec3 translationB(700, 0, 0);
 
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
@@ -147,27 +148,34 @@ int main(void)
 			renderer.Clear();
 			ImGui_ImplGlfwGL3_NewFrame();
 
-			glm::mat4 model = glm::translate(glm::mat4(1.0f), translation);      /* Model matrix. */
-			glm::mat4 mvp = proj * view * model;
-			shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
-
 			texture.Bind();
-			shader.Bind();
-			shader.SetUniform4f("u_Color", r, 0.3f, 0.3f, 0.3f);
 
-			renderer.Draw(va, ib, shader);
-
-			if (r > 1.0f || r < 0.0f)
-				increment = -increment;
-
-			r += increment;
-
-			// 1. Show a simple window.
-			// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
 			{
-				ImGui::SliderFloat("Translation X", &translation.x,    0.0f, 1000.0f); 
-				ImGui::SliderFloat("Translation Y", &translation.y,    0.0f, 1000.0f); 
-				ImGui::SliderFloat("Translation Z", &translation.z, -150.0f, 150.0f); 
+				glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);      /* Model matrix. */
+				glm::mat4 mvp = proj * view * model;
+				shader.Bind();
+				shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
+				renderer.Draw(va, ib, shader);
+			}
+
+			{
+				glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB);      /* Model matrix. */
+				glm::mat4 mvp = proj * view * model;
+				shader.Bind();
+				shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
+				renderer.Draw(va, ib, shader);
+			}
+
+			{
+				ImGui::SliderFloat("TranslationA X", &translationA.x,    0.0f, 1000.0f); 
+				ImGui::SliderFloat("TranslationA Y", &translationA.y,    0.0f, 1000.0f); 
+				ImGui::SliderFloat("TranslationA Z", &translationA.z, -150.0f, 150.0f); 
+			}
+
+			{
+				ImGui::SliderFloat("TranslationB X", &translationB.x,    0.0f, 1000.0f); 
+				ImGui::SliderFloat("TranslationB Y", &translationB.y,    0.0f, 1000.0f); 
+				ImGui::SliderFloat("TranslationB Z", &translationB.z, -150.0f, 150.0f); 
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			}
 
