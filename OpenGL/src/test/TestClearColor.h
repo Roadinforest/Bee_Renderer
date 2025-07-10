@@ -8,10 +8,10 @@ namespace test
 	{
 	public:
 		TestClearColor();
-		virtual ~TestClearColor();
-		virtual void OnUpdate(float deltaTime = 0)override;
-		virtual void OnRender()override;
-		virtual void OnImGuiRender()override;
+		~TestClearColor();
+		void OnUpdate(float deltaTime = 0)override;
+		void OnRender()override;
+		void OnImGuiRender()override;
 	private:
 		float m_ClearColor[4];
 	};

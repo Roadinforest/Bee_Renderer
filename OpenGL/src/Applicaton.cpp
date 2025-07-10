@@ -17,6 +17,8 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
+#include "test/TestClearColor.h"
+
 
 /* Just set the vertex and draw it without using buffer*/
 void drawSimpleTriangle()
@@ -141,43 +143,68 @@ int main(void)
 		glm::vec3 translationA(0, 0, 0);
 		glm::vec3 translationB(700, 0, 0);
 
+		test::Test* currentTest = nullptr;
+		test::TestMenu* testMenu = new test::TestMenu(currentTest);
+		currentTest = testMenu;
+
+		testMenu->RegisterTest<test::TestClearColor>("Clear Test");
+
 		/* Loop until the user closes the window */
 		while (!glfwWindowShouldClose(window))
 		{
+			GLCall(glClearColor(0, 0, 0, 1)); 
+			/* Set the default color buffer to black , if it is not overwrite by the testClear*/
+
 			/* Render here */
 			renderer.Clear();
 			ImGui_ImplGlfwGL3_NewFrame();
 
-			texture.Bind();
-
+			if (currentTest != nullptr)
 			{
-				glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);      /* Model matrix. */
-				glm::mat4 mvp = proj * view * model;
-				shader.Bind();
-				shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
-				renderer.Draw(va, ib, shader);
+				currentTest->OnUpdate();
+				currentTest->OnRender();
+
+				ImGui::Begin("Test");
+				if (currentTest != testMenu && ImGui::Button("<-"))
+				{
+					delete(currentTest);
+					currentTest = testMenu;
+				}
+				currentTest->OnImGuiRender();
+				ImGui::End();
+
 			}
 
-			{
-				glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB);      /* Model matrix. */
-				glm::mat4 mvp = proj * view * model;
-				shader.Bind();
-				shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
-				renderer.Draw(va, ib, shader);
-			}
+			//texture.Bind();
 
-			{
-				ImGui::SliderFloat("TranslationA X", &translationA.x,    0.0f, 1000.0f); 
-				ImGui::SliderFloat("TranslationA Y", &translationA.y,    0.0f, 1000.0f); 
-				ImGui::SliderFloat("TranslationA Z", &translationA.z, -150.0f, 150.0f); 
-			}
+			//{
+			//	glm::mat4 model = glm::translate(glm::mat4(1.0f), translationA);      /* Model matrix. */
+			//	glm::mat4 mvp = proj * view * model;
+			//	shader.Bind();
+			//	shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
+			//	renderer.Draw(va, ib, shader);
+			//}
 
-			{
-				ImGui::SliderFloat("TranslationB X", &translationB.x,    0.0f, 1000.0f); 
-				ImGui::SliderFloat("TranslationB Y", &translationB.y,    0.0f, 1000.0f); 
-				ImGui::SliderFloat("TranslationB Z", &translationB.z, -150.0f, 150.0f); 
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			}
+			//{
+			//	glm::mat4 model = glm::translate(glm::mat4(1.0f), translationB);      /* Model matrix. */
+			//	glm::mat4 mvp = proj * view * model;
+			//	shader.Bind();
+			//	shader.SetUniformMat4f("u_MVP", mvp); // Should always be called after Bind() function
+			//	renderer.Draw(va, ib, shader);
+			//}
+
+			//{
+			//	ImGui::SliderFloat("TranslationA X", &translationA.x,    0.0f, 1000.0f); 
+			//	ImGui::SliderFloat("TranslationA Y", &translationA.y,    0.0f, 1000.0f); 
+			//	ImGui::SliderFloat("TranslationA Z", &translationA.z, -150.0f, 150.0f); 
+			//}
+
+			//{
+			//	ImGui::SliderFloat("TranslationB X", &translationB.x,    0.0f, 1000.0f); 
+			//	ImGui::SliderFloat("TranslationB Y", &translationB.y,    0.0f, 1000.0f); 
+			//	ImGui::SliderFloat("TranslationB Z", &translationB.z, -150.0f, 150.0f); 
+			//	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			//}
 
 			ImGui::Render();
 			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
@@ -185,6 +212,10 @@ int main(void)
 			GLCall(glfwSwapBuffers(window));
 			GLCall(glfwPollEvents());
 		}
+
+		delete currentTest;
+		if (currentTest != testMenu)
+			delete testMenu;
 	}/* Out destrutors will be called at this bracket. */
 	ImGui_ImplGlfwGL3_Shutdown();
 	ImGui::DestroyContext();
