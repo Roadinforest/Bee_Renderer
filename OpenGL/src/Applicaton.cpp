@@ -3,33 +3,13 @@
 
 #include <iostream>
 
-#include "Renderer.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-#include "VertexBufferLayout.h"
-#include "VertexArray.h"
-#include "Shader.h"
-#include "Texture.h"
-
-#include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 
 #include "test/TestClearColor.h"
 #include "test/TestTexture2D.h"
+#include "test/TestRectangle.h"
 
-
-/* Just set the vertex and draw it without using buffer*/
-void drawSimpleTriangle()
-{
-	glBegin(GL_TRIANGLES);
-	glVertex2f(-0.5f, +0.0f);
-	glVertex2f(+0.5f, -0.5f);
-	glVertex2f(-0.5f, +0.5f);
-	glEnd();
-}
 
 int main(void)
 {
@@ -73,6 +53,7 @@ int main(void)
 
 		testMenu->RegisterTest<test::TestClearColor>("Clear Test");
 		testMenu->RegisterTest<test::TestTexture2D>("2D Texture Test");
+		testMenu->RegisterTest<test::TestRectangle>("Simple Triangle Test");
 
 
 		/* Loop until the user closes the window */
