@@ -158,4 +158,4 @@ Bee_Renderer/
 
 在此特别感谢 **[The Cherno](https://youtube.com/thecherno)**，他所创作的殿堂级 OpenGL 系列教程是这个项目得以诞生的基石。
 
-[返回顶部](#-bee_renderer)
+[返回顶部](# 🐝 Bee_Renderer: A Modern OpenGL Renderer)
