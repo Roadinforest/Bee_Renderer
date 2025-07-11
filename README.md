@@ -54,18 +54,6 @@ Bee_Renderer is buzzing with modern features:
     ```
 3.  Open the generated solution file (`.sln`), build, and run the project.
 
-### 📂 Project Structure
-
-```
-Bee_Renderer/
-├── res/                  # Resource hive: shaders, textures
-├── src/                  # Source code hive
-│   ├── vendor/           # Third-party libraries
-│   ├── core/             # Core rendering classes
-│   ├── tests/            # Individual rendering tests
-│   └── Application.cpp   # Main entry point
-└── premake5.lua          # Build system configuration
-```
 
 
 ### 📜 Roadmap
