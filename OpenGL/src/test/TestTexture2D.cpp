@@ -1,6 +1,6 @@
 #include "TestTexture2D.h"
 
-#include "VertexBufferLayout.h"
+#include "Renderer/VertexBufferLayout.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
@@ -12,7 +12,7 @@ namespace test
 		translationA(glm::vec3(0,0,0)),translationB(glm::vec3(300,0,0))
 	{
 		float pos[] = {
-			 0.0f,      0.0f, 0.0f, 0.0f,
+			   0.0f,    0.0f, 0.0f, 0.0f,
 			1000.0f,    0.0f, 1.0f, 0.0f,
 			1000.0f, 1000.0f, 1.0f, 1.0f,
 			   0.0f, 1000.0f, 0.0f, 1.0f

@@ -1,7 +1,7 @@
 #include "TestRectangle.h"
 #include "gl/glew.h"
 
-#include "VertexBufferLayout.h"
+#include "Renderer/VertexBufferLayout.h"
 
 test::TestRectangle::TestRectangle()
 {

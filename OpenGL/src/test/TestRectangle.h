@@ -2,13 +2,13 @@
 
 #include "Test.h"
 
-#include "Shader.h"
-#include "Renderer.h"
-#include "VertexArray.h"
-#include "IndexBuffer.h" 
+#include "Renderer/Shader.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/VertexArray.h"
+#include "Renderer/IndexBuffer.h" 
 
-#include "VertexBuffer.h"
-#include "Texture.h"
+#include "Renderer/VertexBuffer.h"
+#include "Renderer/Texture.h"
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
